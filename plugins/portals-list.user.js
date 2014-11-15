@@ -28,6 +28,7 @@ window.plugin.portalslist.enlP = 0;
 window.plugin.portalslist.resP = 0;
 window.plugin.portalslist.neuP = 0;
 window.plugin.portalslist.filter = 0;
+window.plugin.portalslist.aditionalColumns = [];
 
 /*
  * plugins may add fields by appending their specifiation to the following list. The following members are supported:
@@ -200,6 +201,13 @@ window.plugin.portalslist.getPortals = function() {
   return retval;
 }
 
+window.plugin.portalslist.registerColumn = function(name, callback){
+	window.plugin.portalslist.aditionalColumns.push({
+		name: name,
+		callback: callback
+	});	
+}
+
 window.plugin.portalslist.displayPL = function() {
   var list;
   window.plugin.portalslist.sortBy = 1;
@@ -251,6 +259,7 @@ window.plugin.portalslist.portalTable = function(sortBy, sortOrder, filter) {
       0);
   });
 
+<<<<<<< HEAD
   if(filter !== 0) {
     portals = portals.filter(function(obj) {
       return filter < 0
@@ -267,8 +276,54 @@ window.plugin.portalslist.portalTable = function(sortBy, sortOrder, filter) {
   container.append(table);
 
   row = table.insertRow(-1);
+=======
+  var sortAttr = window.plugin.portalslist.portalTableHeaderSortAttr;
+  var html = window.plugin.portalslist.stats();
+  html += '<table class="portals">'
+    + '<tr class="header">'
+    + '<th>#</th>'
+    + '<th ' + sortAttr('nameLower', sortBy, 1, 'portalTitle') + '>Portal Name</th>'
+    + '<th ' + sortAttr('level', sortBy, -1) + '>Level</th>'
+    + '<th ' + sortAttr('teamN', sortBy, 1) + '>Team</th>'
+    + '<th ' + sortAttr('health', sortBy, -1) + '>Health</th>'
+    + '<th ' + sortAttr('resCount', sortBy, -1) + '>Res</th>'
+    + '<th ' + sortAttr('linkCount', sortBy, -1) + '>Links</th>'
+    + '<th ' + sortAttr('fieldCount', sortBy, -1) + '>Fields</th>'
+    + '<th ' + sortAttr('enemyAp', sortBy, -1) + '>AP</th>';
+  
+  var aditionalColumns = window.plugin.portalslist.aditionalColumns;
+  for(var i in aditionalColumns){
+	  var plug = aditionalColumns[i];
+	  html += '<th ' + sortAttr(plug.name, sortBy, -1) + '>'+plug.name+'</th>';
+  }
+  
+  html += '</tr>\n';
 
-  var length = window.plugin.portalslist.listPortals.length;
+  var rowNum = 1;
+
+  $.each(portals, function(ind, portal) {
+    if (filter === TEAM_NONE || filter === portal.teamN) {
+
+      html += '<tr class="' + (portal.teamN === window.TEAM_RES ? 'res' : (portal.teamN === window.TEAM_ENL ? 'enl' : 'neutral')) + '">'
+        + '<td>'+rowNum+'</td>'
+        + '<td class="portalTitle" style="">' + window.plugin.portalslist.getPortalLink(portal, portal.guid) + '</td>'
+        + '<td class="L' + portal.level +'" style="background-color: '+COLORS_LVL[portal.level]+'">' + portal.level + '</td>'
+        + '<td style="text-align:center;">' + portal.team.substr(0,3) + '</td>';
+
+      html += '<td>' + (portal.teamN!=TEAM_NONE?portal.health+'%':'-') + '</td>'
+        + '<td>' + portal.resCount + '</td>'
+        + '<td class="help" title="In: ' + portal.link.in.length + ' Out: ' + portal.link.out.length + '">' + (portal.linkCount?portal.linkCount:'-') + '</td>'
+        + '<td>' + (portal.fieldCount?portal.fieldCount:'-') + '</td>';
+
+      var apTitle = '';
+      if (PLAYER.team == portal.team) {
+        apTitle += 'Friendly AP:\t'+portal.ap.friendlyAp+'\n'
+                 + '- deploy '+(8-portal.resCount)+' resonator(s)\n'
+                 + '- upgrades/mods unknown\n';
+      }
+      apTitle += 'Enemy AP:\t'+portal.ap.enemyAp+'\n'
+               + '- Destroy AP:\t'+portal.ap.destroyAp+'\n'
+               + '- Capture AP:\t'+portal.ap.captureAp;
 
   ["All", "Neutral", "Resistance", "Enlightened"].forEach(function(label, i) {
     cell = row.appendChild(document.createElement('th'));
@@ -286,6 +341,13 @@ window.plugin.portalslist.portalTable = function(sortBy, sortOrder, filter) {
     $(cell).click(function() {
       $('#portalslist').empty().append(window.plugin.portalslist.portalTable(sortBy, sortOrder, -i));
     });
+
+      for(var i in aditionalColumns){
+    	  var plug = aditionalColumns[i];
+    	  html += '<td>'+plug.callback(portal)+'</th>';
+      }
+
+      html+= '</tr>';
 
     switch(i-1) {
       case -1:

@@ -22,9 +22,9 @@ buildSettings = {
     # the web server at http://0.0.0.0:8000/dist
     # (This shouldn't be required any more - all resources are embedded. but, it remains just in case some new feature
     #  needs external resources)
-    'local8000': {
-        'resourceUrlBase': 'http://0.0.0.0:8000/dist',
-        'distUrlBase': None,
+    'c9': {
+        'resourceUrlBase': None,
+        'distUrlBase': 'https://ingress-intel-total-conversion-c9-falci.c9.io/dist',
     },
 
     # mobile: default entry that also builds the mobile .apk
